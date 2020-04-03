@@ -54,7 +54,7 @@ class VideoSuperResolution(torch.utils.data.Dataset):
         image_a = Image.open(image_a_path).convert('RGB')
         image_b = Image.open(image_b_path).convert('RGB')
 
-        image_a, image_b = self.resize_to_same_ratio(image_a, image_b)
+        image_a, image_b = self.resize_to_64(image_a, image_b)
 
         # Transform image
         image_a = self.transform(image_a)
@@ -68,18 +68,10 @@ class VideoSuperResolution(torch.utils.data.Dataset):
 
         return X, Y
 
-    def resize_to_same_ratio(self, image_a, image_b):
-        # Image B is 480 * 640, we use Image B
-        w_a, h_a = image_a.size
-        w_b, h_b = image_b.size
-        ratio_a = w_a / h_a
-        ratio_b = w_b / h_b
-        if ratio_a == ratio_b:
-            return image_a, image_b
-        else:
-            new_w_a = int(h_a * ratio_b)
-            image_a = image_a.resize((new_w_a, h_a))
-            return image_a, image_b
+    def resize_to_64(self, image_a, image_b):
+        resized_a = image_a.resize((64, 64))
+        resized_b = image_b.resize((64, 64))
+        return resized_a, resized_b
 
     def identify_unique_images(self, start, stop, path, eps):
         non_identical_images = []

@@ -1,5 +1,5 @@
-from dataset import VideoSuperResolution
-from model import BetaVAE_H
+from raw_dataset import VideoSuperResolution
+from raw_model import BetaVAE_H
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToPILImage
@@ -8,7 +8,7 @@ import PIL.Image as Image
 import os
 import numpy as np
 
-IMAGE_FOLDER = 'export'
+IMAGE_FOLDER = 'raw_export'
 
 
 def reconstruction_loss(x, x_recon, distribution="gaussian"):
@@ -63,7 +63,7 @@ def export_image(epoch, cnt, batch_a, batch_b):
 
 if __name__ == "__main__":
     dataset = VideoSuperResolution(240, 480, start=100, stop=5000)
-    batch_size = 10
+    batch_size = 64
     beta = 4  # beta-VAE's beta
 
     shuffle = True
