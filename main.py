@@ -45,7 +45,7 @@ def export_image(epoch, cnt, batch_a, batch_b):
     batch_size = batch_a.shape[0]
     batch_a = F.sigmoid(batch_a.clone())
     for i in range(batch_size):
-        if i % int(batch_size / 4) == 0:
+        if int(batch_size / 4) > 0 and i % int(batch_size / 4) == 0:
             image_a = ToPILImage()(batch_a[i].cpu().clone())
             image_b = ToPILImage()(batch_b[i].cpu().clone())
             w, h = image_a.size
