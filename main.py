@@ -1,14 +1,15 @@
 from dataset import VideoSuperResolution
 from model import BetaVAE_H
+import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToPILImage
 import torch.optim as optim
 import PIL.Image as Image
 import os
-import numpy as np
 
 IMAGE_FOLDER = 'export'
+MODEL_FOLDER = 'saved_models'
 
 
 def reconstruction_loss(x, x_recon, distribution="gaussian"):
@@ -37,12 +38,12 @@ def kl_divergence(mu, logvar):
     total_kld = klds.sum(1).mean(0, True)
     dimension_wise_kld = klds.mean(0)
     mean_kld = klds.mean(1).mean(0, True)
-
     return total_kld, dimension_wise_kld, mean_kld
 
 
 def export_image(epoch, cnt, batch_a, batch_b):
     batch_size = batch_a.shape[0]
+    batch_a = F.sigmoid(batch_a)
     for i in range(batch_size):
         if i % int(batch_size / 4) == 0:
             image_a = ToPILImage()(batch_a[i].cpu().clone())
@@ -61,9 +62,13 @@ def export_image(epoch, cnt, batch_a, batch_b):
             merged.save(image_path)
 
 
+def save_model(model, epoch, loss):
+    torch.save(model, os.path.join(MODEL_FOLDER, f'e_{epoch}_loss_{loss}.model'))
+
+
 if __name__ == "__main__":
     dataset = VideoSuperResolution(240, 480, start=100, stop=5000)
-    batch_size = 10
+    batch_size = 64
     beta = 4  # beta-VAE's beta
 
     shuffle = True
@@ -86,10 +91,11 @@ if __name__ == "__main__":
             recon_loss = reconstruction_loss(y, x_recon)
             total_kld, dim_wise_kld, mean_kld = kl_divergence(mu, logvar)
 
+            beta_vae_loss = recon_loss + beta * total_kld
+
             if epoch % 10 == 0:
                 export_image(epoch, cnt, x_recon, y)
-
-            beta_vae_loss = recon_loss + beta * total_kld
+                save_model(model, epoch, beta_vae_loss.item())
 
             cnt += 1
             total_loss += beta_vae_loss.item()
@@ -100,4 +106,4 @@ if __name__ == "__main__":
             beta_vae_loss.backward()
             optimizer.step()
         print(
-            f'epoch:{epoch} | loss:{total_loss / cnt} | recon_loss:{total_recon_loss / cnt} | epoch_kld:{epoch_kld / cnt}')
+            f'epoch:{epoch} | loss:{total_loss / cnt} | recon:{total_recon_loss / cnt} | kld:{epoch_kld / cnt}')
