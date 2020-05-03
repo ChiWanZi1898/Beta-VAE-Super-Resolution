@@ -20,6 +20,7 @@ import pandas as pd
 import torchvision
 from PIL import Image
 from PIL import ImageFile
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 from baseline import *
@@ -433,28 +434,31 @@ def TRAIN(BETA_PARAM, return_model=False):
                               lr=1e-4,
                               betas=(0.9, 0.999))
 
-    BASELINE_BCE, BASELINE_KLD, BASELINE_TL, BASELINE_TEST_BCE, BASELINE_TEST_KLD, BASELINE_TEST_TL = train(net1,
-                                                                                                            C_max,
-                                                                                                            use_cuda,
-                                                                                                            max_iter,
-                                                                                                            global_iter,
-                                                                                                            decoder_dist,
-                                                                                                            BETA_PARAM,
-                                                                                                            C_stop_iter,
-                                                                                                            objective,
-                                                                                                            gamma,
-                                                                                                            optim1)
-
     PATH = "./base-model-" + str(BETA_PARAM) + ".pt"
+    print("Now training:", PATH)
+    if not os.path.exists(PATH):
+        BASELINE_BCE, BASELINE_KLD, BASELINE_TL, BASELINE_TEST_BCE, BASELINE_TEST_KLD, BASELINE_TEST_TL = train(net1,
+                                                                                                                C_max,
+                                                                                                                use_cuda,
+                                                                                                                max_iter,
+                                                                                                                global_iter,
+                                                                                                                decoder_dist,
+                                                                                                                BETA_PARAM,
+                                                                                                                C_stop_iter,
+                                                                                                                objective,
+                                                                                                                gamma,
+                                                                                                                optim1)
 
-    torch.save({'model_state_dict': net1.state_dict(),
-                'BASELINE_BCE': BASELINE_BCE,
-                'BASELINE_KLD': BASELINE_KLD,
-                'BASELINE_TL': BASELINE_TL,
-                'BASELINE_TEST_BCE': BASELINE_TEST_BCE,
-                'BASELINE_TEST_KLD': BASELINE_TEST_KLD,
-                'BASELINE_TEST_TL': BASELINE_TEST_TL,
-                'BETA_PARAM': BETA_PARAM}, PATH)
+        PATH = "./base-model-" + str(BETA_PARAM) + ".pt"
+
+        torch.save({'model_state_dict': net1.state_dict(),
+                    'BASELINE_BCE': BASELINE_BCE,
+                    'BASELINE_KLD': BASELINE_KLD,
+                    'BASELINE_TL': BASELINE_TL,
+                    'BASELINE_TEST_BCE': BASELINE_TEST_BCE,
+                    'BASELINE_TEST_KLD': BASELINE_TEST_KLD,
+                    'BASELINE_TEST_TL': BASELINE_TEST_TL,
+                    'BETA_PARAM': BETA_PARAM}, PATH)
 
     if use_cuda == False:
         net2 = StudentVAE()
@@ -465,29 +469,32 @@ def TRAIN(BETA_PARAM, return_model=False):
     optim2 = torch.optim.Adam(net2.parameters(),
                               lr=1e-4,
                               betas=(0.9, 0.999))
-
-    OUR_MODEL_BCE, OUR_MODEL_KLD, OUR_MODEL_TL, OUR_MODEL_TEST_BCE, OUR_MODEL_TEST_KLD, OUR_MODEL_TEST_TL = train(net2,
-                                                                                                                  C_max,
-                                                                                                                  use_cuda,
-                                                                                                                  max_iter,
-                                                                                                                  global_iter,
-                                                                                                                  decoder_dist,
-                                                                                                                  BETA_PARAM,
-                                                                                                                  C_stop_iter,
-                                                                                                                  objective,
-                                                                                                                  gamma,
-                                                                                                                  optim2)
-
     PATH = "./student-model-" + str(BETA_PARAM) + ".pt"
+    print("Now training:", PATH)
+    if not os.path.exists(PATH):
+        OUR_MODEL_BCE, OUR_MODEL_KLD, OUR_MODEL_TL, OUR_MODEL_TEST_BCE, OUR_MODEL_TEST_KLD, OUR_MODEL_TEST_TL = train(
+            net2,
+            C_max,
+            use_cuda,
+            max_iter,
+            global_iter,
+            decoder_dist,
+            BETA_PARAM,
+            C_stop_iter,
+            objective,
+            gamma,
+            optim2)
 
-    torch.save({'model_state_dict': net2.state_dict(),
-                'OUR_MODEL_BCE': OUR_MODEL_BCE,
-                'OUR_MODEL_KLD': OUR_MODEL_KLD,
-                'OUR_MODEL_TL': OUR_MODEL_TL,
-                'OUR_MODEL_TEST_BCE': OUR_MODEL_TEST_BCE,
-                'OUR_MODEL_TEST_KLD': OUR_MODEL_TEST_KLD,
-                'OUR_MODEL_TEST_TL': OUR_MODEL_TEST_TL,
-                'BETA_PARAM': BETA_PARAM}, PATH)
+        PATH = "./student-model-" + str(BETA_PARAM) + ".pt"
+
+        torch.save({'model_state_dict': net2.state_dict(),
+                    'OUR_MODEL_BCE': OUR_MODEL_BCE,
+                    'OUR_MODEL_KLD': OUR_MODEL_KLD,
+                    'OUR_MODEL_TL': OUR_MODEL_TL,
+                    'OUR_MODEL_TEST_BCE': OUR_MODEL_TEST_BCE,
+                    'OUR_MODEL_TEST_KLD': OUR_MODEL_TEST_KLD,
+                    'OUR_MODEL_TEST_TL': OUR_MODEL_TEST_TL,
+                    'BETA_PARAM': BETA_PARAM}, PATH)
 
     if return_model == True:
         return net1, net2
