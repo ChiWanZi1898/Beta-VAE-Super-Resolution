@@ -12,7 +12,7 @@ from PIL import Image
 class YourName(torch.utils.data.Dataset):
     def __init__(self,
                  resolution=142,
-                 root_dir="/data/png/p142/data",
+                 root_dir="/DATA/png/142p",
                  transform=None,
                  train=True):
         """
